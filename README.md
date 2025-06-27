@@ -4,18 +4,6 @@
 
 ---
 
-## 🧩 Project Structure
-
-agronova_project/
-├── fastapi_backend/ → FastAPI backend for disease prediction and chatbot
-├── flutter_app/ → Mobile app interface for farmers
-├── requirements.txt → Python backend dependencies
-├── .gitignore → Ignored files for version control
-└── README.md → Project overview (this file)
-
-
----
-
 ## 🚀 Features
 
 - 📱 **Mobile App**: Built with Flutter for an intuitive farmer interface.
