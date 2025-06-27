@@ -1,0 +1,41 @@
+# Root-level ignores
+.env
+*.env
+*.log
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.db
+.DS_Store
+
+# Python virtual environments
+venv/
+env/
+.venv/
+.fastapi_backend/venv/
+.fastapi_backend/env/
+
+# FastAPI-specific ignores
+fastapi_backend/.env
+fastapi_backend/__pycache__/
+fastapi_backend/*.pyc
+
+# Flutter build and IDE files
+flutter_app/.dart_tool/
+flutter_app/.idea/
+flutter_app/.packages
+flutter_app/build/
+flutter_app/.flutter-plugins
+flutter_app/.flutter-plugins-dependencies
+flutter_app/.metadata
+flutter_app/pubspec.lock
+flutter_app/android/.gradle/
+flutter_app/ios/Pods/
+flutter_app/ios/.symlinks/
+flutter_app/ios/Flutter/Flutter.framework/
+flutter_app/macos/Flutter/Flutter.framework/
+flutter_app/web/.dart_tool/
+
+# VSCode and JetBrains IDE
+.vscode/
+.idea/
