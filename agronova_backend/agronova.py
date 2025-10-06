@@ -26,6 +26,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# remove them 
 # # --- Load TensorFlow Model (.h5 or SavedModel) ---
 # MODEL_PATH = "trained_cnn_model.h5"  # or change to folder path for SavedModel
 # model = tf.keras.models.load_model(MODEL_PATH)
