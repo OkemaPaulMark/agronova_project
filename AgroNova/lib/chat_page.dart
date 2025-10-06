@@ -13,7 +13,7 @@ class _ChatPageState extends State<ChatPage> {
   final TextEditingController _controller = TextEditingController();
   final List<Map<String, String>> _messages = [];
 
- final String apiUrl = "http://192.168.116.29:8000/chat";  // Change to your LAN IP if on phone
+  final String apiUrl = "https://agronova-project-1.onrender.com/chat";
 
   Future<void> _sendMessage() async {
     final userMessage = _controller.text.trim();

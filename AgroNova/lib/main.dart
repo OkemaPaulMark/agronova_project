@@ -39,7 +39,7 @@ class MyApp extends StatelessWidget {
 class DefaultPage extends StatefulWidget {
   final String title;
 
-  const DefaultPage({super.key, this.title = 'Home Page'});
+   const DefaultPage({super.key, this.title = 'Home Page'});
 
   @override
   State<DefaultPage> createState() => _DefaultPageState();

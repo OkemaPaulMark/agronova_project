@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
 
 class DiagnosisPage extends StatefulWidget {
@@ -12,12 +14,58 @@ class DiagnosisPage extends StatefulWidget {
 class _DiagnosisPageState extends State<DiagnosisPage> {
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
+  String _result = "No diagnosis yet.";
+  double _confidence = 0.0;
+  String _advice = "";
 
   Future<void> _pickImage(ImageSource source) async {
     final pickedFile = await _picker.pickImage(source: source, imageQuality: 85);
     if (pickedFile != null) {
       setState(() {
         _selectedImage = File(pickedFile.path);
+        _result = "No diagnosis yet.";
+        _confidence = 0.0;
+        _advice = "";
+      });
+    }
+  }
+
+  Future<void> _runDiagnosis() async {
+    if (_selectedImage == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please upload or capture an image first.")),
+      );
+      return;
+    }
+
+    final uri = Uri.parse("http://10.10.132.157:8000/predict"); // Use 10.0.2.2 for Android Emulator, else localhost
+    final request = http.MultipartRequest('POST', uri);
+    request.files.add(await http.MultipartFile.fromPath('file', _selectedImage!.path));
+
+    setState(() {
+      _result = "Diagnosing...";
+      _advice = "";
+    });
+
+    try {
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(responseBody);
+        setState(() {
+          _result = data['class'] ?? "Unknown";
+          _confidence = (data['confidence'] ?? 0.0) * 100;
+          _advice = data['advice'] ?? "No advice provided.";
+        });
+      } else {
+        setState(() {
+          _result = "Failed to get result. Code: ${response.statusCode}";
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _result = "Error: $e";
       });
     }
   }
@@ -35,6 +83,7 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Step 1
               const Text('Step 1: Upload or Take a Photo',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 12),
@@ -52,16 +101,16 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
                     ? Image.file(_selectedImage!, height: 180, width: double.infinity, fit: BoxFit.cover)
                     : Image.asset('assets/leaf.jpg', height: 180, width: double.infinity, fit: BoxFit.cover),
               ),
-              const SizedBox(height: 10),
+
+              // Step 2
+              const SizedBox(height: 20),
               const Text('Step 2: Diagnose',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    // add prediction logic here using _selectedImage
-                  },
+                  onPressed: _runDiagnosis,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     padding: const EdgeInsets.symmetric(vertical: 14),
@@ -69,27 +118,27 @@ class _DiagnosisPageState extends State<DiagnosisPage> {
                   child: const Text('Diagnose', style: TextStyle(fontSize: 18, color: Colors.white)),
                 ),
               ),
-              const SizedBox(height: 10),
-              const Divider(),
-              const SizedBox(height: 10),
+
+              // Step 3
+              const SizedBox(height: 20),
               const Text('Step 3: Result',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 12),
+              const SizedBox(height: 10),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Color(0xFFEAFBE8),
+                  color: const Color(0xFFEAFBE8),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Column(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Disease: Leaf Blight'),
-                    SizedBox(height: 4),
-                    Text('Confidence: 92%'),
-                    SizedBox(height: 4),
-                    Text('Advice: Apply X treatment and isolate crop'),
+                    Text('Disease: $_result'),
+                    const SizedBox(height: 4),
+                    Text('Confidence: ${_confidence.toStringAsFixed(2)}%'),
+                    const SizedBox(height: 4),
+                    Text('Advice: $_advice'),
                   ],
                 ),
               ),
