@@ -39,3 +39,6 @@ flutter_app/web/.dart_tool/
 # VSCode and JetBrains IDE
 .vscode/
 .idea/
+# Ignore local large files
+*.h5
+*.hdf5
