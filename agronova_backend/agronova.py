@@ -1,48 +1,94 @@
-from fastapi import FastAPI,Request #type: ignore
+from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_groq import ChatGroq  # You can switch to ChatOpenAI, etc.
+from langchain_groq import ChatGroq
 from dotenv import load_dotenv
-load_dotenv()
 import os
+import tensorflow as tf
+import numpy as np
+from PIL import Image
+import io
 
-
+# --- Load environment variables ---
+load_dotenv()
 assert os.getenv("GROQ_API_KEY")
 
-# --- FastAPI setup ---
+# --- FastAPI app setup ---
 app = FastAPI()
 
-# --- Input schema ---
+# --- CORS (so Flutter can call FastAPI endpoint) ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Change to your Flutter app domain in production
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# --- Load TensorFlow Model (.h5 or SavedModel) ---
+MODEL_PATH = "trained_cnn_model.h5"  # or change to folder path for SavedModel
+model = tf.keras.models.load_model(MODEL_PATH)
+
+# --- Class labels (adjust based on your model output order) ---
+class_labels = ["Healthy", "Leaf Blight", "Rust"]
+
+
+# --- Predict Endpoint ---
+@app.post("/predict")
+async def predict(file: UploadFile = File(...)):
+    try:
+        # Step 1: Read and decode the image
+        contents = await file.read()
+        image = Image.open(io.BytesIO(contents)).convert("RGB")
+
+        # Step 2: Resize and normalize image
+        image = image.resize((256, 256))  # Match your model's expected input size
+        image_array = np.array(image) / 255.0  # Normalize pixels to 0–1
+        image_array = np.expand_dims(image_array, axis=0)  # Shape: (1, 256, 256, 3)
+
+        # Step 3: Run inference
+        predictions = model.predict(image_array)[0]
+        max_index = int(np.argmax(predictions))
+        predicted_class = class_labels[max_index]
+        confidence = float(predictions[max_index]) * 100  # Optional: convert to %
+
+        return {
+            "class": predicted_class,
+            "confidence": confidence,
+            "advice": get_advice(predicted_class)
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
+
+
+def get_advice(label: str) -> str:
+    if label == "Leaf Blight":
+        return "Apply fungicide and remove infected leaves."
+    elif label == "Rust":
+        return "Use rust-resistant varieties and rotate crops."
+    elif label == "Healthy":
+        return "No issues detected. Continue regular monitoring."
+    else:
+        return "No specific advice available for this result."
+# --- Chatbot setup ---
 class ChatRequest(BaseModel):
     question: str
 
-# --- LangChain setup ---
 system_message = """
 You are an intelligent AI assistant specialized in helping farmers.
 Your name is Nova, and you provide practical advice on farming topics.
-You can answer questions about crops, livestock, soil health, pest management, and sustainable practices.
-You are friendly, knowledgeable, and always ready to help smallholder farmers improve their practices.
-Your responses should be concise, actionable, and based on best practices in agriculture.
-You can also suggest tools, methods, or tips that are relevant to the question asked.
-Answer questions in a clear, helpful, and friendly manner.
-Tailor your responses to African farming environment, focus mainly on Ugandan ones because this app is ugandan based.
-Use simple language and provide practical advice that smallholder farmers can apply.
-If relevant, suggest tools, methods, or tips related to the topic.
+... (shortened for brevity)
 """
 
-# Define the prompt template
 prompt = ChatPromptTemplate.from_messages([
     ("system", system_message),
     ("human", "{question}")
 ])
-
-# Load the model (using Groq - adjust key in your .env or config)
-llm = ChatGroq(model="llama3-8b-8192", temperature=0.3)
-
-# Chain the prompt to the model
+llm = ChatGroq(model="llama-3.1-8b-instant", temperature=0.3)
 chain = prompt | llm
 
-# --- Chat endpoint ---
 @app.post("/chat")
 async def chat(request: ChatRequest):
     try:
@@ -51,7 +97,6 @@ async def chat(request: ChatRequest):
     except Exception as e:
         return {"error": str(e)}
 
-# --- Root route ---
 @app.get("/")
 def root():
     return {"message": "AI Farming Assistant API is running!"}

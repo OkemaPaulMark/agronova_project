@@ -1,6 +1,7 @@
 import 'dart:async';
+import 'package:agronova/main.dart';
 import 'package:flutter/material.dart';
-import 'main.dart'; // to access DefaultPage
+// to access DefaultPage
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -18,7 +19,7 @@ class _SplashScreenState extends State<SplashScreen> {
     Timer(const Duration(seconds: 2), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const DefaultPage()),
+        MaterialPageRoute(builder: (context) => const AuthWrapper()),
       );
     });
   }

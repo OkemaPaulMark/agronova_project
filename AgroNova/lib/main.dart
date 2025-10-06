@@ -6,9 +6,21 @@ import 'insights_page.dart';
 import 'learn_page.dart';
 import 'settings_page.dart';
 import 'chat_page.dart';
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';  // or main.dart if DefaultPage is in there
+import 'signin_page.dart';
+
+
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -27,7 +39,7 @@ class MyApp extends StatelessWidget {
 class DefaultPage extends StatefulWidget {
   final String title;
 
-  const DefaultPage({super.key, this.title = 'Home Page'});
+   const DefaultPage({super.key, this.title = 'Home Page'});
 
   @override
   State<DefaultPage> createState() => _DefaultPageState();
@@ -101,5 +113,26 @@ class _DefaultPageState extends State<DefaultPage> {
 
 
 
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        } else if (snapshot.hasData) {
+          return const DefaultPage();
+        } else {
+          return const SignInScreen();
+        }
+      },
+    );
+  }
+}
 
 

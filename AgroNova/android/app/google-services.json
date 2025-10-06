@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "48179351087",
+    "firebase_url": "https://agronova-d94b1-default-rtdb.firebaseio.com",
+    "project_id": "agronova-d94b1",
+    "storage_bucket": "agronova-d94b1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:48179351087:android:509fa31d1fdcd8f80900da",
+        "android_client_info": {
+          "package_name": "com.agronova.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3EkPLNC92lcMtOVTKatnRgLMJoCDdwCA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:48179351087:android:41f63d264931c08f0900da",
+        "android_client_info": {
+          "package_name": "com.example.agronova"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3EkPLNC92lcMtOVTKatnRgLMJoCDdwCA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
