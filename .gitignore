@@ -42,3 +42,4 @@ flutter_app/web/.dart_tool/
 # Ignore local large files
 *.h5
 *.hdf5
+*.h5
