@@ -6,8 +6,6 @@ from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import os
 # import tensorflow as tf
-import numpy as np
-from PIL import Image
 import io
 
 # --- Load environment variables ---
